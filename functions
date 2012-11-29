@@ -1,0 +1,60 @@
+#! /bin/bash
+
+. "$genapp_functions/core"
+
+create_app_skel() {
+    echo "Creating application skeleton at $app_dir"
+    chmod 770 $app_dir
+    mkdir $app_dir/app
+    mkdir $app_dir/tmp
+}
+
+install_app() {
+    echo "Copying application files to $app_dir/app"
+    cp -a $pkg_dir/* $app_dir/app/
+    chmod -R g+w $app_dir/app
+}
+
+ruby_args() {
+    _args=$(metadata ruby_args "run[$app_port]")
+    _escaped=$(escape_quotes "$_args")
+    echo "\"$_escaped\""
+}
+
+write_config() {
+    _config="$control_dir/config"
+    echo "Writing configuration to $_config"
+
+    _args=$(ruby_args)
+    _resolved_args=$(eval "echo $_args")
+    _escaped_resolved_args=$(escape_quotes "$_resolved_args")
+
+    echo "app_dir=$app_dir" >> $_config
+    echo "port=$app_port" >> $_config
+    echo "args=\"$_escaped_resolved_args\"" >> $_config
+
+    # Temporary hack to get stuff to install in local dirs.
+    echo "HOME=$app_dir" >> $_config
+    echo "export GEM_HOME=$app_dir/.gem" >> $_config
+    echo "export GEM_PATH=$app_dir/.gem/ruby/1.9.1" >> $_config
+    echo "PATH=$app_dir/.gem/ruby/1.9.1/bin:$PATH" >> $_config
+}
+
+install_gems() {
+    echo "Installing gems"
+    # Hacky hack.
+    HOME=$app_dir
+    export GEM_HOME=$app_dir/.gem
+    export GEM_PATH=$app_dir/.gem/ruby/1.9.1
+    PATH=$app_dir/.gem/ruby/1.9.1/bin:$PATH
+
+    # Installs bundler, and let it do the rest
+    gem install bundler --no-ri --no-rdoc
+    cd $app_dir/app
+    bundle install --deployment
+}
+
+write_control() {
+    echo "Writing control scripts to $control_dir"
+    install -m 550 $plugin_dir/control/start $control_dir
+}

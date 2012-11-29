@@ -1,0 +1,12 @@
+#! /bin/bash
+
+set -u
+set -e
+
+. "$plugin_dir/functions"
+
+create_app_skel
+install_app
+write_config
+install_gems
+write_control

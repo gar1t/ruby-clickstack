@@ -3,11 +3,14 @@
 ## Using this ClickStack:
 
 This stack uses Ruby 1.9.3, provided by ArchLinux x64
+
 Use bundler to manage your gems
+
 Use rake to do things (Default rake task is run[$app_port])
 
-To specify other things, it would look like so:
-    bees config:set MYAPP -Rargs='run $app_port'
+To specify different settings:
+
+    bees config:set MYAPP -Rargs='run[$app_port]'
     bees app:restart MYAPP
 
 ## Rails example:
@@ -23,7 +26,7 @@ And add those two lines to the Gemfile (To get a JavaScript runtime):
     gem 'execjs'
     gem 'therubyracer'
 
-Prepare for deployment! (The -t alias is not yet working. Stay tuned!)
+Prepare for deployment!
 
     bundle install
     zip ../rails.zip *
